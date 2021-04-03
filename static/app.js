@@ -17,6 +17,16 @@ function unpack(rows, index) {
   });
 }
 
+function newUnpack(rows, index) {
+  var newObject = {}
+  rows.forEach(function(row){
+    var id = row["id"];
+    var value =  row[index];
+    newObject[id]=value;
+  });
+  return newObject;
+}
+
 var url = "static/samples.json"
 // making the data easier to get into
 d3.json(url).then(function(data) {
@@ -33,8 +43,37 @@ d3.json(url).then(function(data) {
     entry.text(id);
   })
 
-  var ethnicity = unpack(metaData, "ethnicity");
-  console.log(ethnicity);
+  var ethnicity = newUnpack(metaData, "ethnicity");
+  ethnicity["stat"] = "ethnicity";
+
+  var gender = newUnpack(metaData, "gender");
+  gender["stat"] = "gender";
+
+  var age = newUnpack(metaData, "age");
+  age["stat"] = "age";
+
+  var location = newUnpack(metaData, "location");
+  location["stat"] = "location";
+
+  var bbtype = newUnpack(metaData, "bbtype");
+  bbtype["stat"] = "bbtype";
+
+  var wfreq = newUnpack(metaData, "wfreq");
+  wfreq["stat"] = "wfreq";
+
+  attributes = [ethnicity, gender, age, location, bbtype, wfreq];
+
+  starter = 940;
+
+  var demoList = d3.select("#sample-metadata");
+
+  attributes.forEach(function (a) {
+    string = `${a.stat}: ${a[starter]}`
+    console.log(string);
+    var line = demoList.append("div");
+    line.classed("row");
+    line.text(string);
+  });
 
 });
 
