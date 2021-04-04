@@ -67,16 +67,64 @@ d3.json(url).then(function(data) {
 
   var demoList = d3.select("#sample-metadata");
 
-  attributes.forEach(function (a) {
-    string = `${a.stat}: ${a[starter]}`
-    console.log(string);
-    var line = demoList.append("div");
-    line.classed("row");
-    line.text(string);
-  });
+ demoList.selectAll("div")
+  .data(attributes)
+  .enter()
+  .append("div")
+  .classed("row", true)
+  .text(function(d) {
+    return `${d.stat}: ${d[starter]}`;
+  })
+  .exit()
+  .remove();
+
+
+  var otuIDs = newUnpack(data.samples, "otu_ids");
+  var otuLabels = newUnpack(data.samples, "otu_labels");
+  var sampleValues = newUnpack(data.samples, "sample_values");
+
+  console.log(otuIDs);
+
+  //already in order, can just slice ten values
+
+  var barHeights = sampleValues[starter].slice(0,10);
+  var otuNames = otuIDs[starter].slice(0,10);
+  var barTicks = otuNames.map(d=>`OTU ${d}`);
+  var barHover = otuLabels[starter].slice(0,10);
+  var yAxis = [0,1,2,3,4,5,6,7,8,9];
+
+  console.log(otuNames);
+  console.log(barTicks);
+
+  var trace1 = {
+    x: barHeights,
+    y: yAxis,
+    type: "bar",
+    orientation: "h",
+    text: barHover
+  };
+
+  var layout = {
+    title: 'Top Microbes',
+    yaxis: {
+      tickvals: yAxis,
+      ticktext: barTicks
+    }
+  };
+
+  Plotly.newPlot("bar", [trace1], layout);
+
 
 });
 
+
+  //attributes.forEach(function (a) {
+  //  string = `${a.stat}: ${a[starter]}`
+  //  console.log(string);
+  //  var line = demoList.append("div");
+  //  line.classed("row");
+  //  line.text(string);
+  //});
   
   //var demographics = reindex(metaData);
 
