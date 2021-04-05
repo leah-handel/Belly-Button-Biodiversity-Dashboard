@@ -8,8 +8,6 @@ function newUnpack(rows, index) {
   return newObject;
 }
 
-
-
 var url = "static/samples.json"
 
 d3.json(url).then(function(data) {
@@ -29,7 +27,7 @@ d3.json(url).then(function(data) {
 
   // unpacking demographic data
   var ethnicity = newUnpack(metaData, "ethnicity");
-  ethnicity["stat"] = "ethnicity";
+  ethnicity["stat"] = "ethnicity"; //stat is to pull text for the demographics list
 
   var gender = newUnpack(metaData, "gender");
   gender["stat"] = "gender";
@@ -79,6 +77,7 @@ d3.json(url).then(function(data) {
   var barHover = otuLabels[starter].slice(0,10);
   var yAxis = [9,8,7,6,5,4,3,2,1,0];
   
+  //building bar chart
 
   var trace1 = {
     x: barHeights,
@@ -98,18 +97,16 @@ d3.json(url).then(function(data) {
 
   Plotly.newPlot("bar", [trace1], layout1);
 
-  // bubble chart
+  // building bubble chart
+  var maxMarker = 50;
+  var size = sampleValues[starter];
+  var sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
 
-// sizeref using above forumla
-var maxMarker = 50;
-var size = sampleValues[starter];
-var sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
-// size ref formula suggested in the the plotly documentation: https://plotly.com/javascript/bubble-charts/
+  // size ref formula suggested in the the plotly documentation: https://plotly.com/javascript/bubble-charts/
 
+  var color = otuIDs[starter].map(x => `rgb(${x/17},0,${255-x/17})`);
 
-var color = otuIDs[starter].map(x => `rgb(${x/17},0,${255-x/17})`);
-
-var trace2 = {
+  var trace2 = {
   x: otuIDs[starter],
   y: sampleValues[starter],
   text: otuLabels[starter],
@@ -132,18 +129,24 @@ var layout2 = {
     title: {
       text: 'Number of OTUs',
     }}
-};
+  };
 
-Plotly.newPlot("bubble", [trace2], layout2);
+  Plotly.newPlot("bubble", [trace2], layout2);
 
-function handleChange() {
+  //handle change function for drop down selection
+
+  function handleChange() {
 
   var selection = dropDown.property("value");
+
+  //update the demographic data
 
   demoList.selectAll("div")
   .text(function(d) {
     return `${d.stat}: ${d[selection]}`;
   });
+
+  //update the bar chart
 
   barHeights = sampleValues[selection].slice(0,10);
   otuNames = otuIDs[selection].slice(0,10);
@@ -155,22 +158,35 @@ function handleChange() {
   Plotly.restyle("bar", "x", [barHeights]);
   Plotly.restyle("bar", "text", [barHover]);
 
-  //var newBarData = {
-  //x: barHeights,
-  //text: barHover
-  //};
-
   var newBarLayout = {
     'yaxis.tickvals': yAxis,
-    'yaxis.ticktext': barTicks
-};
+    'yaxis.ticktext': barTicks // the ticktext didn't like not having tickvals also passed in
+  };
+
   Plotly.relayout("bar", newBarLayout);
 
+  //update the bubble chart
 
-  //Plotly.relayout("bar", "yaxis", newBarLayout);
-}
+  //data
 
-dropDown.on("change", handleChange);
+  Plotly.restyle("bubble", "x", [otuIDs[selection]]);
+  Plotly.restyle("bubble", "y", [sampleValues[starter]]);
+  Plotly.restyle("bubble", "text", [otuLabels[starter]]);
+
+  //bubbles
+
+  size = sampleValues[selection];
+  sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
+  color = otuIDs[selection].map(x => `rgb(${x/17},0,${255-x/17})`);
+
+  Plotly.restyle("bubble", "marker.size", [size]);
+  Plotly.restyle("bubble", "marker.sizeref", [sizeRef]);
+  Plotly.restyle("bubble", "marker.color", [color]);
+
+  }
+
+  //event watcher:
+  dropDown.on("change", handleChange);
 
 });
 
