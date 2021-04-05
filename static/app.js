@@ -1,22 +1,3 @@
-function reindex(rawData) {
-  var newObject = {};
-  rawData.forEach(function(subject){
-    var id = subject.id;
-    newObject[id] = subject;
-  });
-  return newObject;
-}
-
-function unpack(rows, index) {
-  return rows.map(function(row) {
-    var id = row["id"];
-    var value =  row[index];
-    var newObject = {};
-    newObject[id]=value;
-    return newObject;
-  });
-}
-
 function newUnpack(rows, index) {
   var newObject = {}
   rows.forEach(function(row){
@@ -25,6 +6,23 @@ function newUnpack(rows, index) {
     newObject[id]=value;
   });
   return newObject;
+}
+
+function handleChange() {
+
+  var dropDown = d3.selectAll("#selDataset");
+  var demoList = d3.selectAll("#sample-metadata");
+
+  var selection = dropDown.property("value");
+
+  console.log(attributes[0][selection]);
+
+  demoList.selectAll("div")
+  //.data(attributes)
+  .text(function(d) {
+    return `${d.stat}: ${d[selection]}`;
+  })
+
 }
 
 var url = "static/samples.json"
@@ -36,11 +34,12 @@ d3.json(url).then(function(data) {
   var ids = metaData.map(d=>d.id);
   console.log(ids);
 
-  var dropDown = d3.select("#selDataset");
+  var dropDown = d3.selectAll("#selDataset");
 
   ids.forEach(function(id) {
     var entry = dropDown.append("option");
     entry.text(id);
+    entry.attr("value", id);
   })
 
   // unpacking demographic data
@@ -123,8 +122,6 @@ var size = sampleValues[starter];
 var sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
 // size ref formula suggested in the the plotly documentation: https://plotly.com/javascript/bubble-charts/
 
-//var maxColor = Math.max(otuIDs[starter]);
-//var colorScale = maxColor/255-1;
 
 var color = otuIDs[starter].map(x => `rgb(${x/17},0,${255-x/17})`);
 
@@ -155,6 +152,7 @@ var layout2 = {
 
 Plotly.newPlot("bubble", [trace2], layout2);
 
+dropDown.on("change", handleChange);
 
 });
 
