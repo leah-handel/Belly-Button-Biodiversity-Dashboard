@@ -28,7 +28,7 @@ function newUnpack(rows, index) {
 }
 
 var url = "static/samples.json"
-// making the data easier to get into
+
 d3.json(url).then(function(data) {
   console.log(data);
 
@@ -43,6 +43,7 @@ d3.json(url).then(function(data) {
     entry.text(id);
   })
 
+  // unpacking demographic data
   var ethnicity = newUnpack(metaData, "ethnicity");
   ethnicity["stat"] = "ethnicity";
 
@@ -63,7 +64,9 @@ d3.json(url).then(function(data) {
 
   attributes = [ethnicity, gender, age, location, bbtype, wfreq];
 
-  starter = 940;
+  starter = 940; //subject to populate the initial page load
+
+  // demographics table
 
   var demoList = d3.select("#sample-metadata");
 
@@ -78,6 +81,7 @@ d3.json(url).then(function(data) {
   .exit()
   .remove();
 
+  // bar chart
 
   var otuIDs = newUnpack(data.samples, "otu_ids");
   var otuLabels = newUnpack(data.samples, "otu_labels");
@@ -93,9 +97,6 @@ d3.json(url).then(function(data) {
   var barHover = otuLabels[starter].slice(0,10);
   var yAxis = [0,1,2,3,4,5,6,7,8,9];
 
-  console.log(otuNames);
-  console.log(barTicks);
-
   var trace1 = {
     x: barHeights,
     y: yAxis,
@@ -104,7 +105,7 @@ d3.json(url).then(function(data) {
     text: barHover
   };
 
-  var layout = {
+  var layout1 = {
     title: 'Top Microbes',
     yaxis: {
       tickvals: yAxis,
@@ -112,7 +113,47 @@ d3.json(url).then(function(data) {
     }
   };
 
-  Plotly.newPlot("bar", [trace1], layout);
+  Plotly.newPlot("bar", [trace1], layout1);
+
+  // bubble chart
+
+// sizeref using above forumla
+var maxMarker = 50;
+var size = sampleValues[starter];
+var sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
+// size ref formula suggested in the the plotly documentation: https://plotly.com/javascript/bubble-charts/
+
+//var maxColor = Math.max(otuIDs[starter]);
+//var colorScale = maxColor/255-1;
+
+var color = otuIDs[starter].map(x => `rgb(${x/17},0,${255-x/17})`);
+
+var trace2 = {
+  x: otuIDs[starter],
+  y: sampleValues[starter],
+  text: otuLabels[starter],
+  mode: 'markers',
+  marker: {
+    size: size,
+    sizeref: sizeRef,
+    sizemode: 'area',
+    color: color
+  },
+};
+
+var layout2 = {
+  title: 'Microbe Prevalence',
+  xaxis: {
+    title: {
+      text: 'Microbe ID',
+    }},
+  yaxis: {
+    title: {
+      text: 'Number of OTUs',
+    }}
+};
+
+Plotly.newPlot("bubble", [trace2], layout2);
 
 
 });
