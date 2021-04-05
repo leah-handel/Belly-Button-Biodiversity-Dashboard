@@ -11,11 +11,9 @@ function newUnpack(rows, index) {
 var url = "static/samples.json"
 
 d3.json(url).then(function(data) {
-  console.log(data);
 
   var metaData = data.metadata;
   var ids = metaData.map(d=>d.id);
-  console.log(ids);
 
   var dropDown = d3.selectAll("#selDataset");
 
@@ -50,13 +48,12 @@ d3.json(url).then(function(data) {
 
   // demographics table
 
-  var demoList = d3.select("#sample-metadata");
+  var demoList = d3.select("#demo-list");
 
- demoList.selectAll("div")
+ demoList.selectAll("li")
   .data(attributes)
   .enter()
-  .append("div")
-  .classed("row", true)
+  .append("li")
   .text(function(d) {
     return `${d.stat}: ${d[starter]}`;
   })
@@ -92,6 +89,11 @@ d3.json(url).then(function(data) {
     yaxis: {
       tickvals: yAxis,
       ticktext: barTicks
+    },
+    xaxis: {
+      title: {
+        text: 'Number in Sample',
+      }
     }
   };
 
@@ -117,17 +119,17 @@ d3.json(url).then(function(data) {
     sizemode: 'area',
     color: color
   },
-};
+  };
 
-var layout2 = {
-  title: 'Microbe Prevalence',
-  xaxis: {
-    title: {
-      text: 'Microbe ID',
+  var layout2 = {
+    title: 'Microbe Prevalence',
+    xaxis: {
+      title: {
+        text: 'OTU ID',
     }},
-  yaxis: {
-    title: {
-      text: 'Number of OTUs',
+    yaxis: {
+      title: {
+        text: 'Number in Sample',
     }}
   };
 
@@ -137,111 +139,52 @@ var layout2 = {
 
   function handleChange() {
 
-  var selection = dropDown.property("value");
+    var selection = dropDown.property("value");
 
-  //update the demographic data
+    //update the demographic data
 
-  demoList.selectAll("div")
-  .text(function(d) {
+    demoList.selectAll("li")
+    .text(function(d) {
     return `${d.stat}: ${d[selection]}`;
-  });
+    });
 
-  //update the bar chart
+    //update the bar chart
 
-  barHeights = sampleValues[selection].slice(0,10);
-  otuNames = otuIDs[selection].slice(0,10);
-  barTicks = otuNames.map(d=>`OTU ${d}`);
-  barHover = otuLabels[selection].slice(0,10);
+    barHeights = sampleValues[selection].slice(0,10);
+    otuNames = otuIDs[selection].slice(0,10);
+    barTicks = otuNames.map(d=>`OTU ${d}`);
+    barHover = otuLabels[selection].slice(0,10);
 
-  console.log(barTicks);
+    Plotly.restyle("bar", "x", [barHeights]);
+    Plotly.restyle("bar", "text", [barHover]);
 
-  Plotly.restyle("bar", "x", [barHeights]);
-  Plotly.restyle("bar", "text", [barHover]);
+    var newBarLayout = {
+      'yaxis.tickvals': yAxis,
+      'yaxis.ticktext': barTicks // the ticktext didn't like not having tickvals also passed in
+    };
 
-  var newBarLayout = {
-    'yaxis.tickvals': yAxis,
-    'yaxis.ticktext': barTicks // the ticktext didn't like not having tickvals also passed in
-  };
+    Plotly.relayout("bar", newBarLayout);
 
-  Plotly.relayout("bar", newBarLayout);
+    //update the bubble chart
 
-  //update the bubble chart
+    //data
 
-  //data
+    Plotly.restyle("bubble", "x", [otuIDs[selection]]);
+    Plotly.restyle("bubble", "y", [sampleValues[starter]]);
+    Plotly.restyle("bubble", "text", [otuLabels[starter]]);
 
-  Plotly.restyle("bubble", "x", [otuIDs[selection]]);
-  Plotly.restyle("bubble", "y", [sampleValues[starter]]);
-  Plotly.restyle("bubble", "text", [otuLabels[starter]]);
+    //bubbles
 
-  //bubbles
+    size = sampleValues[selection];
+    sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
+    color = otuIDs[selection].map(x => `rgb(${x/17},0,${255-x/17})`);
 
-  size = sampleValues[selection];
-  sizeRef = 2.0 * Math.max(...size) / (maxMarker**2);
-  color = otuIDs[selection].map(x => `rgb(${x/17},0,${255-x/17})`);
-
-  Plotly.restyle("bubble", "marker.size", [size]);
-  Plotly.restyle("bubble", "marker.sizeref", [sizeRef]);
-  Plotly.restyle("bubble", "marker.color", [color]);
-
+    Plotly.restyle("bubble", "marker.size", [size]);
+    Plotly.restyle("bubble", "marker.sizeref", [sizeRef]);
+    Plotly.restyle("bubble", "marker.color", [color]);
   }
 
   //event watcher:
   dropDown.on("change", handleChange);
 
 });
-
-
-  //attributes.forEach(function (a) {
-  //  string = `${a.stat}: ${a[starter]}`
-  //  console.log(string);
-  //  var line = demoList.append("div");
-  //  line.classed("row");
-  //  line.text(string);
-  //});
-  
-  //var demographics = reindex(metaData);
-
-  //var sampleData =  data.samples;
-  //var samples = reindex(sampleData);
-
-
-    //var demographics = {};
-    //var ids = metadata.map(subject => subject.id);
-    //console.log(ids);
-    
-   //metadata.forEach(function(subject){
-    //    var id = subject.id;
-     //   demographics[id] = subject;
-    //});
-    //console.log(demographics);
-    //console.log(demographics[940]["ethnicity"]); this worked
-
-
-    //reindex(sampleData, samples);
-
-  //console.log(demographics);
- // console.log(samples);
-
-  //
-
-  //demographics.forEach(function(subject) {
-    //var entry = dropDown.append("option");
-    //console.log(object.keys(subject));
-  //});
-
-  //
-
-  //dropDown.selectAll("option")
-   // .data(demographics)
-    //.enter()
-   // .append("option")
-   // .attr("value", function(d) {
-    //  console.log(d["id"]);
-    //  return d["id"];
-   // })
-    //.text(function(d) {
-   //   return d.id;
-   // })
-    //.exit()
-   // .remove();
-
