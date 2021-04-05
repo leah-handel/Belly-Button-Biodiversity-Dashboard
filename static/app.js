@@ -8,22 +8,7 @@ function newUnpack(rows, index) {
   return newObject;
 }
 
-function handleChange() {
 
-  var dropDown = d3.selectAll("#selDataset");
-  var demoList = d3.selectAll("#sample-metadata");
-
-  var selection = dropDown.property("value");
-
-  console.log(attributes[0][selection]);
-
-  demoList.selectAll("div")
-  //.data(attributes)
-  .text(function(d) {
-    return `${d.stat}: ${d[selection]}`;
-  })
-
-}
 
 var url = "static/samples.json"
 
@@ -86,15 +71,14 @@ d3.json(url).then(function(data) {
   var otuLabels = newUnpack(data.samples, "otu_labels");
   var sampleValues = newUnpack(data.samples, "sample_values");
 
-  console.log(otuIDs);
-
   //already in order, can just slice ten values
 
   var barHeights = sampleValues[starter].slice(0,10);
   var otuNames = otuIDs[starter].slice(0,10);
   var barTicks = otuNames.map(d=>`OTU ${d}`);
   var barHover = otuLabels[starter].slice(0,10);
-  var yAxis = [0,1,2,3,4,5,6,7,8,9];
+  var yAxis = [9,8,7,6,5,4,3,2,1,0];
+  
 
   var trace1 = {
     x: barHeights,
@@ -151,6 +135,40 @@ var layout2 = {
 };
 
 Plotly.newPlot("bubble", [trace2], layout2);
+
+function handleChange() {
+
+  var selection = dropDown.property("value");
+
+  demoList.selectAll("div")
+  .text(function(d) {
+    return `${d.stat}: ${d[selection]}`;
+  });
+
+  barHeights = sampleValues[selection].slice(0,10);
+  otuNames = otuIDs[selection].slice(0,10);
+  barTicks = otuNames.map(d=>`OTU ${d}`);
+  barHover = otuLabels[selection].slice(0,10);
+
+  console.log(barTicks);
+
+  Plotly.restyle("bar", "x", [barHeights]);
+  Plotly.restyle("bar", "text", [barHover]);
+
+  //var newBarData = {
+  //x: barHeights,
+  //text: barHover
+  //};
+
+  var newBarLayout = {
+    'yaxis.tickvals': yAxis,
+    'yaxis.ticktext': barTicks
+};
+  Plotly.relayout("bar", newBarLayout);
+
+
+  //Plotly.relayout("bar", "yaxis", newBarLayout);
+}
 
 dropDown.on("change", handleChange);
 
