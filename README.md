@@ -4,7 +4,7 @@
 
 This project is an interactive dataset allowing the user to explore the microbes found in volunteer's belly buttons. Select a volunteer's anonymous ID number to see the top ten microbes found in their belly button, plus the prevalence of every type of microbe found.
 
-This project was done for week 15 homework for the 
+Done for week 15 homework for the Northwestern Data Science and Visualization Bootcamp.
 
 ## Technologies
 
