@@ -11,7 +11,7 @@ Done for week 15 homework for the Northwestern Data Science and Visualization Bo
 ## Technologies
 
 * Website: HTML with Bootstrap
-* Data and Interactivity: Javascript with D3
+* Data and Interactivity: Javascript with Plotly
 
 ## Data Sources
 
